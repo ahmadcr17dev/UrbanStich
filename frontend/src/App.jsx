@@ -54,6 +54,7 @@ const AppContent = () => {
         }}
       />
 
+      {/* For Login panel */}
       {showLogin && (
         <Login
           onClose={() => setShowLogin(false)}
@@ -65,6 +66,7 @@ const AppContent = () => {
         />
       )}
 
+      {/* For Register Panel */}
       {showRegister && (
         <Register
           onClose={() => setShowRegister(false)}
