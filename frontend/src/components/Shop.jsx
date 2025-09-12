@@ -136,16 +136,16 @@ const Shop = () => {
                     </section>
                     {/* Categories Section */}
 
-                    <div className="flex w-full min-h-screen bg-gray-50 p-6">
+                    <div className="flex flex-col lg:flex-row w-full min-h-screen bg-gray-50 p-4 sm:p-6">
                         {/* Sidebar Filters */}
-                        <aside className="w-1/4 bg-white p-5 rounded-lg shadow-md">
-                            <h2 className="text-lg font-semibold mb-4">Filters</h2>
+                        <aside className="w-full lg:w-1/4 bg-white p-4 sm:p-5 rounded-lg shadow-md mb-6 lg:mb-0">
+                            <h2 className="text-base sm:text-lg font-semibold mb-4">Filters</h2>
 
                             {/* Price */}
                             <div className="mb-6">
-                                <h3 className="font-medium mb-2">Price</h3>
+                                <h3 className="font-medium mb-2 text-sm sm:text-base">Price</h3>
                                 <input type="range" min="0" max="50000" className="w-full accent-green-600" />
-                                <div className="flex justify-between text-sm text-gray-600">
+                                <div className="flex justify-between text-xs sm:text-sm text-gray-600">
                                     <span>Rs 0</span>
                                     <span>Rs 50,000</span>
                                 </div>
@@ -153,8 +153,8 @@ const Shop = () => {
 
                             {/* Categories */}
                             <div className="mb-6">
-                                <h3 className="font-medium mb-2">Categories</h3>
-                                <ul className="space-y-2 text-gray-700 text-sm">
+                                <h3 className="font-medium mb-2 text-sm sm:text-base">Categories</h3>
+                                <ul className="space-y-2 text-gray-700 text-xs sm:text-sm">
                                     <li><input type="checkbox" /> Shirts</li>
                                     <li><input type="checkbox" /> Pants</li>
                                     <li><input type="checkbox" /> Watches</li>
@@ -166,8 +166,8 @@ const Shop = () => {
 
                             {/* Colors */}
                             <div className="mb-6">
-                                <h3 className="font-medium mb-2">Colors</h3>
-                                <div className="flex space-x-3">
+                                <h3 className="font-medium mb-2 text-sm sm:text-base">Colors</h3>
+                                <div className="flex flex-wrap gap-3">
                                     <span className="w-6 h-6 rounded-full bg-red-500 border"></span>
                                     <span className="w-6 h-6 rounded-full bg-blue-500 border"></span>
                                     <span className="w-6 h-6 rounded-full bg-green-500 border"></span>
@@ -182,12 +182,12 @@ const Shop = () => {
 
                             {/* Sizes */}
                             <div className="mb-6">
-                                <h3 className="font-medium mb-2">Sizes</h3>
-                                <div className="flex space-x-2">
+                                <h3 className="font-medium mb-2 text-sm sm:text-base">Sizes</h3>
+                                <div className="flex flex-wrap gap-2">
                                     {["S", "M", "L", "XL", "XXL"].map((s) => (
                                         <span
                                             key={s}
-                                            className="px-3 py-1 border rounded-md text-gray-600 cursor-pointer hover:bg-green-600 hover:text-white"
+                                            className="px-3 py-1 border rounded-md text-gray-600 text-xs sm:text-sm cursor-pointer hover:bg-green-600 hover:text-white"
                                         >
                                             {s}
                                         </span>
@@ -197,20 +197,20 @@ const Shop = () => {
 
                             {/* Stock */}
                             <div className="mb-6">
-                                <h3 className="font-medium mb-2">Stock</h3>
-                                <label className="block text-sm text-gray-700">
+                                <h3 className="font-medium mb-2 text-sm sm:text-base">Stock</h3>
+                                <label className="block text-xs sm:text-sm text-gray-700">
                                     <input type="checkbox" /> In Stock
                                 </label>
-                                <label className="block text-sm text-gray-700">
+                                <label className="block text-xs sm:text-sm text-gray-700">
                                     <input type="checkbox" /> Out of Stock
                                 </label>
                             </div>
 
                             {/* Discount */}
                             <div className="mb-6">
-                                <h3 className="font-medium mb-2">Discount</h3>
+                                <h3 className="font-medium mb-2 text-sm sm:text-base">Discount</h3>
                                 <input type="range" min="0" max="100" className="w-full accent-green-600" />
-                                <div className="flex justify-between text-sm text-gray-600">
+                                <div className="flex justify-between text-xs sm:text-sm text-gray-600">
                                     <span>0%</span>
                                     <span>100%</span>
                                 </div>
@@ -218,20 +218,20 @@ const Shop = () => {
                         </aside>
 
                         {/* Products Section */}
-                        <main className="w-3/4 pl-6">
+                        <main className="w-full lg:w-3/4 lg:pl-6">
                             {/* Top Bar */}
-                            <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-2xl font-semibold">Shop</h2>
+                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3">
+                                <h2 className="text-xl sm:text-2xl font-semibold">Shop</h2>
                                 <div className="flex items-center space-x-3">
                                     <button
                                         onClick={() => setLayout("grid")}
-                                        className={`p-2 rounded-md ${layout === "grid" ? "bg-green-600 text-white" : "bg-gray-200"}`}
+                                        className={`p-2 rounded-md text-sm sm:text-base ${layout === "grid" ? "bg-green-600 text-white" : "bg-gray-200"}`}
                                     >
                                         <FaThLarge />
                                     </button>
                                     <button
                                         onClick={() => setLayout("list")}
-                                        className={`p-2 rounded-md ${layout === "list" ? "bg-green-600 text-white" : "bg-gray-200"}`}
+                                        className={`p-2 rounded-md text-sm sm:text-base ${layout === "list" ? "bg-green-600 text-white" : "bg-gray-200"}`}
                                     >
                                         <FaList />
                                     </button>
@@ -242,54 +242,51 @@ const Shop = () => {
                             <div
                                 className={
                                     layout === "grid"
-                                        ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+                                        ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 2xl:grid-cols-4 gap-6"
                                         : "space-y-6"
                                 }
                             >
                                 {products.map((p) => {
-                                    // Get default variation (first one)
-
                                     const firstVariation = p.variations && p.variations.length > 0 ? p.variations[0] : null;
                                     const imageUrl = firstVariation?.mainImage
                                         ? `http://localhost:8080/uploads/${firstVariation.mainImage}`
-                                        : "/placeholder.png"; // fallback image
+                                        : "/placeholder.png";
                                     const price = firstVariation?.price || 0;
 
                                     return (
                                         <div
                                             key={p.id}
-                                            className="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition"
+                                            className="bg-white rounded-lg shadow-md p-3 sm:p-4 hover:shadow-lg transition"
                                         >
                                             <Link to={`/product/${p._id}`}>
-
                                                 {/* Product Image */}
                                                 <div className="relative">
                                                     <img
                                                         src={imageUrl}
                                                         alt={p.name}
-                                                        className="w-full h-56 object-cover rounded-md"
+                                                        className="w-full h-44 sm:h-56 md:h-64 object-cover rounded-md"
                                                     />
                                                     {p.discount > 0 && (
-                                                        <span className="absolute top-2 left-2 bg-green-600 text-white text-xs px-2 py-1 rounded-md">
+                                                        <span className="absolute top-2 left-2 bg-green-600 text-white text-[10px] sm:text-xs px-2 py-1 rounded-md">
                                                             -{p.discount}%
                                                         </span>
                                                     )}
-                                                    <div className="absolute top-2 right-2 flex space-x-2 text-gray-500">
+                                                    <div className="absolute top-2 right-2 flex space-x-2 text-gray-500 text-sm sm:text-base">
                                                         <FaEye className="cursor-pointer hover:text-green-600" />
                                                         <FaHeart className="cursor-pointer hover:text-red-600" />
                                                     </div>
                                                 </div>
 
                                                 {/* Product Info */}
-                                                <h3 className="text-lg font-semibold mt-3">{p.name}</h3>
-                                                <div className="flex items-center space-x-1 mt-2">
+                                                <h3 className="text-sm sm:text-base md:text-lg font-semibold mt-3">{p.name}</h3>
+                                                <div className="flex items-center space-x-1 mt-2 text-xs sm:text-sm">
                                                     {[...Array(5)].map((_, i) => (
                                                         <FaStar key={i} className="text-yellow-400" />
                                                     ))}
                                                 </div>
 
                                                 {/* Features */}
-                                                <div className="flex space-x-4 mt-3 text-gray-500 text-sm">
+                                                <div className="flex flex-wrap gap-3 mt-3 text-gray-500 text-xs sm:text-sm">
                                                     <div className="flex items-center space-x-1">
                                                         <FaTruck /> <span>Fast Delivery</span>
                                                     </div>
@@ -301,16 +298,16 @@ const Shop = () => {
                                                 {/* Price + Button */}
                                                 <div className="flex flex-col mt-3">
                                                     <div className="flex flex-row items-center">
-                                                        <span className="text-red-600 text-lg font-bold">
+                                                        <span className="text-red-600 text-sm sm:text-lg font-bold">
                                                             Rs: {(price - (price / 100) * p.discount).toFixed(2)}
                                                         </span>
                                                         {p.discount > 0 && (
-                                                            <span className="ml-2 line-through text-gray-400 text-sm">
+                                                            <span className="ml-2 line-through text-gray-400 text-xs sm:text-sm">
                                                                 Rs: {price}
                                                             </span>
                                                         )}
                                                     </div>
-                                                    <button className="flex justify-center items-center w-full space-x-2 border border-green-600 text-green-600 px-4 py-2 rounded-md hover:bg-green-600 hover:text-white hover:cursor-pointer transition mt-2">
+                                                    <button className="flex justify-center items-center w-full space-x-2 border border-green-600 text-green-600 px-3 sm:px-4 py-2 rounded-md hover:bg-green-600 hover:text-white hover:cursor-pointer transition mt-2 text-xs sm:text-sm md:text-base">
                                                         <FaShoppingCart />
                                                         <span>Add To Cart</span>
                                                     </button>

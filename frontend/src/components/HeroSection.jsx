@@ -56,7 +56,7 @@ const HeroSection = () => {
 
                     {/* Title */}
                     <h1 className="font-poppins text-3xl md:text-4xl lg:text-4xl xl:text-5xl 2xl:text-[54px] font-bold leading-snug sm:leading-snug lg:leading-tight mt-4 sm:mt-6">
-                        Discover <span class="text-green-600">Everyday</span> Fashion Crafted for Modern <span class="text-green-600">Living</span>
+                        Discover <span className="text-green-600">Everyday</span> Fashion Crafted for Modern <span className="text-green-600">Living</span>
                     </h1>
 
                     {/* Paragraph */}
