@@ -5,9 +5,11 @@ import { HiOutlineMenu, HiOutlineX } from 'react-icons/hi';
 import { FaCartShopping } from "react-icons/fa6";
 import urbanstichlogo from "../images/urbanstichlogo.png";
 import { NavLink } from 'react-router-dom';
+import { useSelector } from "react-redux";
 
 const Navbar = ({ onLoginClick }) => {
     const [isOpen, setIsOpen] = useState(false); // Mobile menu
+    const CartCount = useSelector((state) => state.cart.items.length);
 
     return (
         <>
@@ -77,9 +79,11 @@ const Navbar = ({ onLoginClick }) => {
                         {/* Cart */}
                         <div className="relative flex items-center hover:cursor-pointer">
                             <FaCartShopping className="text-[18px] lg:text-[20px]" />
-                            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
-                                0
-                            </span>
+                            {CartCount > 0 && (
+                                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
+                                    {CartCount}
+                                </span>
+                            )}
                         </div>
 
                         {/* Account */}

@@ -3,39 +3,49 @@ import axios from "axios";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
 import { FaStar, FaShoppingCart, FaHeart, FaEye, FaTruck, FaTag } from "react-icons/fa";
+import { useDispatch } from "react-redux";
+import { AddToCart } from "../store/cartSlice"; // ✅ updated import
+import toast from "react-hot-toast";
 
 const responsive = {
-    superLargeDesktop: { // 2xl
-        breakpoint: { max: 4000, min: 1536 },
-        items: 5,
-    },
-    desktop: { // xl
-        breakpoint: { max: 1536, min: 1280 },
-        items: 4,
-    },
-    laptop: { // lg
-        breakpoint: { max: 1280, min: 1020 },
-        items: 3,
-    },
-    tablet: { // md
-        breakpoint: { max: 1020, min: 640 },
-        items: 2,
-    },
-    mobile: { // sm
-        breakpoint: { max: 640, min: 0 },
-        items: 1,
-    },
+    superLargeDesktop: { breakpoint: { max: 4000, min: 1536 }, items: 5 },
+    desktop: { breakpoint: { max: 1536, min: 1280 }, items: 4 },
+    laptop: { breakpoint: { max: 1280, min: 1020 }, items: 3 },
+    tablet: { breakpoint: { max: 1020, min: 640 }, items: 2 },
+    mobile: { breakpoint: { max: 640, min: 0 }, items: 1 },
 };
 
 const PopularProducts = () => {
-    const [products, setproducts] = useState([]);
+    const [products, setProducts] = useState([]);
+    const dispatch = useDispatch();
 
     useEffect(() => {
         axios
             .get("http://localhost:8080/api/product/displayproducts")
-            .then((res) => setproducts(res.data))
-            .catch((err) => console.log(err));
+            .then((res) => setProducts(res.data))
+            .catch((err) => console.error(err));
     }, []);
+
+    // handle add to cart
+    const handleAddToCart = (product) => {
+        const firstVariation = product.variations?.[0] || {};
+        const variation = {
+            color: firstVariation.color || "",
+            size: firstVariation.sizes?.[0]?.size || "",
+        };
+
+        dispatch(
+            AddToCart({
+                _id: product._id,
+                name: product.name,
+                price: firstVariation.price || product.price || 0,
+                mainImage: firstVariation.mainImage || "placeholder.jpg",
+                variation,
+            })
+        );
+
+        toast.success(`${product.name} added to cart`);
+    };
 
     return (
         <section className="mt-20 px-4 sm:px-6 md:px-10 lg:px-12 2xl:px-20">
@@ -65,8 +75,7 @@ const PopularProducts = () => {
                     {products
                         .filter((p) => p.discount >= 5)
                         .map((p) => {
-                            // get first variation for display
-                            const firstVariation = p.variations[0] || {};
+                            const firstVariation = p.variations?.[0] || {};
                             const mainImage = firstVariation.mainImage || "placeholder.jpg";
                             const displayPrice = firstVariation.price || p.price || 0;
 
@@ -139,7 +148,10 @@ const PopularProducts = () => {
                                                     </span>
                                                 )}
                                             </div>
-                                            <button className="flex items-center justify-center mt-2 py-2 space-x-2 bg-none text-green-700 border border-green-700 rounded-md hover:bg-green-700 hover:text-white hover:cursor-pointer transition text-xs sm:text-sm md:text-base">
+                                            <button
+                                                onClick={() => handleAddToCart(p)}
+                                                className="flex items-center justify-center mt-2 py-2 space-x-2 bg-none text-green-700 border border-green-700 rounded-md hover:bg-green-700 hover:text-white hover:cursor-pointer transition text-xs sm:text-sm md:text-base"
+                                            >
                                                 <FaShoppingCart />
                                                 <span>Add To Cart</span>
                                             </button>
