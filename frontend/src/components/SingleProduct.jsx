@@ -14,7 +14,6 @@ function SingleProduct() {
 
     useEffect(() => {
         let isMounted = true;
-
         axios
             .get(`http://localhost:8080/api/product/products/${id}`)
             .then((res) => {

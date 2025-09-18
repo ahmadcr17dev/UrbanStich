@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { FaThLarge, FaList, FaStar, FaShoppingCart, FaHeart, FaEye, FaTruck, FaTag } from "react-icons/fa";
 import cat1 from "../images/cat1.png";
 import cat2 from "../images/cat2.png";
@@ -11,6 +11,9 @@ import "react-multi-carousel/lib/styles.css";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { Hourglass } from "react-loader-spinner";
+import { useDispatch } from "react-redux";
+import { AddToCart } from "../store/cartSlice";
+import toast from "react-hot-toast";
 
 const responsive = {
     superLargeDesktop: { // 2xl
@@ -48,6 +51,7 @@ const Shop = () => {
     const [layout, setLayout] = useState("grid");
     const [products, setproducts] = useState([]);
     const [loading, setloading] = useState(true);
+    const dispatch = useDispatch();
 
     useEffect(() => {
         let isMounted = true; // prevent state updates if unmounted
@@ -72,6 +76,33 @@ const Shop = () => {
             isMounted = false; // cleanup on unmount
         };
     }, []);
+
+    // handle add to cart
+    const handleAddToCart = (product) => {
+        const firstVariation = product.variations?.[0] || {};
+        const variation = {
+            color: firstVariation.color || "",
+            size: firstVariation.sizes?.[0]?.size || "",
+        };
+
+        const result = dispatch(
+            AddToCart({
+                _id: product._id,
+                name: product.name,
+                price: firstVariation.price || product.price || 0,
+                discount: product.discount,
+                quantity:1,
+                mainImage: `http://localhost:8080/uploads/${firstVariation.mainImage}` || "placeholder.jpg",
+                variation,
+            })
+        );
+
+        if (result.payload?.error) {
+            toast.error(`${product.name} is already in cart`);
+        } else {
+            toast.success(`${product.name} added to cart`);
+        }
+    };
 
     return (
         <>
@@ -258,67 +289,69 @@ const Shop = () => {
                                             key={p.id}
                                             className="bg-white rounded-lg shadow-md p-3 sm:p-4 hover:shadow-lg transition"
                                         >
-                                            <Link to={`/product/${p._id}`}>
-                                                {/* Product Image */}
-                                                <div className="relative">
+                                            {/* Product Image */}
+                                            <div className="relative">
+                                                <Link to={`/product/${p._id}`}>
                                                     <img
                                                         src={imageUrl}
                                                         alt={p.name}
                                                         className="w-full h-44 sm:h-56 md:h-64 object-cover rounded-md"
                                                     />
+                                                </Link>
+                                                {p.discount > 0 && (
+                                                    <span className="absolute top-2 left-2 bg-green-600 text-white text-[10px] sm:text-xs px-2 py-1 rounded-md">
+                                                        -{p.discount}%
+                                                    </span>
+                                                )}
+                                                <div className="absolute top-2 right-2 flex space-x-2 text-gray-500 text-sm sm:text-base">
+                                                    <FaEye className="cursor-pointer hover:text-green-600" />
+                                                    <FaHeart className="cursor-pointer hover:text-red-600" />
+                                                </div>
+                                            </div>
+
+                                            {/* Product Info */}
+                                            <h3 className="text-sm sm:text-base md:text-lg font-semibold mt-3">{p.name}</h3>
+                                            <div className="flex items-center space-x-1 mt-2 text-xs sm:text-sm">
+                                                {[...Array(5)].map((_, i) => (
+                                                    <FaStar key={i} className="text-yellow-400" />
+                                                ))}
+                                            </div>
+
+                                            {/* Features */}
+                                            <div className="flex flex-wrap gap-3 mt-3 text-gray-500 text-xs sm:text-sm">
+                                                <div className="flex items-center space-x-1">
+                                                    <FaTruck /> <span>Fast Delivery</span>
+                                                </div>
+                                                <div className="flex items-center space-x-1">
+                                                    <FaTag /> <span>Best Price</span>
+                                                </div>
+                                            </div>
+
+                                            {/* Price + Button */}
+                                            <div className="flex flex-col mt-3">
+                                                <div className="flex flex-row items-center">
+                                                    <span className="text-red-600 text-sm sm:text-lg font-bold">
+                                                        Rs: {(price - (price / 100) * p.discount).toFixed(2)}
+                                                    </span>
                                                     {p.discount > 0 && (
-                                                        <span className="absolute top-2 left-2 bg-green-600 text-white text-[10px] sm:text-xs px-2 py-1 rounded-md">
-                                                            -{p.discount}%
+                                                        <span className="ml-2 line-through text-gray-400 text-xs sm:text-sm">
+                                                            Rs: {price}
                                                         </span>
                                                     )}
-                                                    <div className="absolute top-2 right-2 flex space-x-2 text-gray-500 text-sm sm:text-base">
-                                                        <FaEye className="cursor-pointer hover:text-green-600" />
-                                                        <FaHeart className="cursor-pointer hover:text-red-600" />
-                                                    </div>
                                                 </div>
-
-                                                {/* Product Info */}
-                                                <h3 className="text-sm sm:text-base md:text-lg font-semibold mt-3">{p.name}</h3>
-                                                <div className="flex items-center space-x-1 mt-2 text-xs sm:text-sm">
-                                                    {[...Array(5)].map((_, i) => (
-                                                        <FaStar key={i} className="text-yellow-400" />
-                                                    ))}
-                                                </div>
-
-                                                {/* Features */}
-                                                <div className="flex flex-wrap gap-3 mt-3 text-gray-500 text-xs sm:text-sm">
-                                                    <div className="flex items-center space-x-1">
-                                                        <FaTruck /> <span>Fast Delivery</span>
-                                                    </div>
-                                                    <div className="flex items-center space-x-1">
-                                                        <FaTag /> <span>Best Price</span>
-                                                    </div>
-                                                </div>
-
-                                                {/* Price + Button */}
-                                                <div className="flex flex-col mt-3">
-                                                    <div className="flex flex-row items-center">
-                                                        <span className="text-red-600 text-sm sm:text-lg font-bold">
-                                                            Rs: {(price - (price / 100) * p.discount).toFixed(2)}
-                                                        </span>
-                                                        {p.discount > 0 && (
-                                                            <span className="ml-2 line-through text-gray-400 text-xs sm:text-sm">
-                                                                Rs: {price}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                    <button className="flex justify-center items-center w-full space-x-2 border border-green-600 text-green-600 px-3 sm:px-4 py-2 rounded-md hover:bg-green-600 hover:text-white hover:cursor-pointer transition mt-2 text-xs sm:text-sm md:text-base">
-                                                        <FaShoppingCart />
-                                                        <span>Add To Cart</span>
-                                                    </button>
-                                                </div>
-                                            </Link>
+                                                <button className="flex justify-center items-center w-full space-x-2 border border-green-600 text-green-600 px-3 sm:px-4 py-2 rounded-md hover:bg-green-600 hover:text-white hover:cursor-pointer transition mt-2 text-xs sm:text-sm md:text-base"
+                                                    onClick={() => handleAddToCart(p)}
+                                                >
+                                                    <FaShoppingCart />
+                                                    <span>Add To Cart</span>
+                                                </button>
+                                            </div>
                                         </div>
                                     );
                                 })}
                             </div>
                         </main>
-                    </div>
+                    </div >
                 </>
             )}
         </>

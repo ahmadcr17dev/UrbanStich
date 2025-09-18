@@ -12,6 +12,7 @@ import { Toaster } from "react-hot-toast";
 import PopularProducts from "./components/PopularProducts";
 import Shop from "./components/Shop";
 import SingleProduct from "./components/SingleProduct";
+import Cart from "./components/Cart";
 
 const AppContent = () => {
   const [showLogin, setShowLogin] = useState(false);
@@ -106,6 +107,13 @@ const App = () => {
             <>
               <Navbar />
               <SingleProduct />
+              <Footer />
+            </>
+          } />
+          <Route path="/cart" element={
+            <>
+              <Navbar />
+              <Cart />
               <Footer />
             </>
           } />

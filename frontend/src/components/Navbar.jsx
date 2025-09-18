@@ -78,12 +78,14 @@ const Navbar = ({ onLoginClick }) => {
 
                         {/* Cart */}
                         <div className="relative flex items-center hover:cursor-pointer">
-                            <FaCartShopping className="text-[18px] lg:text-[20px]" />
-                            {CartCount > 0 && (
-                                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
-                                    {CartCount}
-                                </span>
-                            )}
+                            <NavLink to="/cart">
+                                <FaCartShopping className="text-[18px] lg:text-[20px]" />
+                                {CartCount > 0 && (
+                                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
+                                        {CartCount}
+                                    </span>
+                                )}
+                            </NavLink>
                         </div>
 
                         {/* Account */}

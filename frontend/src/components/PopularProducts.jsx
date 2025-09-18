@@ -2,9 +2,16 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
-import { FaStar, FaShoppingCart, FaHeart, FaEye, FaTruck, FaTag } from "react-icons/fa";
+import {
+    FaStar,
+    FaShoppingCart,
+    FaHeart,
+    FaEye,
+    FaTruck,
+    FaTag,
+} from "react-icons/fa";
 import { useDispatch } from "react-redux";
-import { AddToCart } from "../store/cartSlice"; // ✅ updated import
+import { AddToCart } from "../store/cartSlice";
 import toast from "react-hot-toast";
 
 const responsive = {
@@ -26,25 +33,43 @@ const PopularProducts = () => {
             .catch((err) => console.error(err));
     }, []);
 
-    // handle add to cart
+    // ✅ Add to Cart Handler
     const handleAddToCart = (product) => {
         const firstVariation = product.variations?.[0] || {};
-        const variation = {
-            color: firstVariation.color || "",
-            size: firstVariation.sizes?.[0]?.size || "",
+
+        // pick first size if none selected
+        const selectedSizeObj = firstVariation.sizes?.[0] || {
+            size: "",
+            stock: 0,
         };
 
-        dispatch(
+        const variation = {
+            color: firstVariation.color || "",
+            size: selectedSizeObj.size,
+            stock: selectedSizeObj.stock,
+        };
+
+        const price = firstVariation.price || product.price || 0;
+
+        const result = dispatch(
             AddToCart({
                 _id: product._id,
                 name: product.name,
-                price: firstVariation.price || product.price || 0,
-                mainImage: firstVariation.mainImage || "placeholder.jpg",
+                price: price,
+                discount: product.discount,
+                quantity: 1,
+                mainImage: firstVariation.mainImage
+                    ? `http://localhost:8080/uploads/${firstVariation.mainImage}`
+                    : "placeholder.jpg",
                 variation,
             })
         );
 
-        toast.success(`${product.name} added to cart`);
+        if (result.payload?.error) {
+            toast.error(`${product.name} is already in cart`);
+        } else {
+            toast.success(`${product.name} added to cart`);
+        }
     };
 
     return (
@@ -78,7 +103,6 @@ const PopularProducts = () => {
                             const firstVariation = p.variations?.[0] || {};
                             const mainImage = firstVariation.mainImage || "placeholder.jpg";
                             const displayPrice = firstVariation.price || p.price || 0;
-
                             return (
                                 <div
                                     key={p._id}
