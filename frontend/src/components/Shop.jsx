@@ -11,7 +11,7 @@ import "react-multi-carousel/lib/styles.css";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { Hourglass } from "react-loader-spinner";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { AddToCart } from "../store/cartSlice";
 import toast from "react-hot-toast";
 
@@ -80,19 +80,31 @@ const Shop = () => {
     // handle add to cart
     const handleAddToCart = (product) => {
         const firstVariation = product.variations?.[0] || {};
+
+        // pick first size if none selected
+        const selectedSizeObj = firstVariation.sizes?.[0] || {
+            size: "",
+            stock: 0,
+        };
+
         const variation = {
             color: firstVariation.color || "",
-            size: firstVariation.sizes?.[0]?.size || "",
+            size: selectedSizeObj.size,
+            stock: selectedSizeObj.stock,
         };
+
+        const price = firstVariation.price || product.price || 0;
 
         const result = dispatch(
             AddToCart({
                 _id: product._id,
                 name: product.name,
-                price: firstVariation.price || product.price || 0,
+                price: price,
                 discount: product.discount,
-                quantity:1,
-                mainImage: `http://localhost:8080/uploads/${firstVariation.mainImage}` || "placeholder.jpg",
+                quantity: 1,
+                mainImage: firstVariation.mainImage
+                    ? `http://localhost:8080/uploads/${firstVariation.mainImage}`
+                    : "placeholder.jpg",
                 variation,
             })
         );
@@ -310,7 +322,7 @@ const Shop = () => {
                                             </div>
 
                                             {/* Product Info */}
-                                            <h3 className="text-sm sm:text-base md:text-lg font-semibold mt-3">{p.name}</h3>
+                                            <h3 className="text-sm sm:text-base md:text-lg font-semibold mt-3">{(p.name).slice(0, 20) + "..."}</h3>
                                             <div className="flex items-center space-x-1 mt-2 text-xs sm:text-sm">
                                                 {[...Array(5)].map((_, i) => (
                                                     <FaStar key={i} className="text-yellow-400" />
@@ -339,7 +351,7 @@ const Shop = () => {
                                                         </span>
                                                     )}
                                                 </div>
-                                                <button className="flex justify-center items-center w-full space-x-2 border border-green-600 text-green-600 px-3 sm:px-4 py-2 rounded-md hover:bg-green-600 hover:text-white hover:cursor-pointer transition mt-2 text-xs sm:text-sm md:text-base"
+                                                <button className="flex justify-center items-center w-full space-x-2 border border-green-600 text-green-600 px-3 sm:px-4 py-2 rounded-md hover:bg-green-700 hover:text-white hover:cursor-pointer transition mt-2 text-xs sm:text-sm md:text-base"
                                                     onClick={() => handleAddToCart(p)}
                                                 >
                                                     <FaShoppingCart />

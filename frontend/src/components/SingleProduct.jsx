@@ -3,14 +3,21 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 import { FaStar, FaShoppingCart, FaHeart, FaEye, FaTruck, FaTag } from "react-icons/fa";
 import { Hourglass } from "react-loader-spinner";
+import { AddToCart } from "../store/cartSlice";
+import toast from "react-hot-toast";
+import { useDispatch, useSelector } from "react-redux";
 
 function SingleProduct() {
     const { id } = useParams();
     const [product, setProduct] = useState(null);
     const [selectedVariation, setSelectedVariation] = useState(null);
     const [selectedImage, setSelectedImage] = useState("");
+    const [selectedColor, setSelectedColor] = useState(null);
+    const [selectedSize, setSelectedSize] = useState(null);
     const [related, setrelated] = useState([]);
     const [loading, setloading] = useState(true);
+    const dispatch = useDispatch();
+    const cartItems = useSelector((state) => state.cart.items);
 
     useEffect(() => {
         let isMounted = true;
@@ -45,6 +52,111 @@ function SingleProduct() {
 
     if (!product) return <p className="text-center mt-10">Loading...</p>;
     const price = selectedVariation?.price || 0;
+
+    // Add to cart logic
+    const HandleAddToCart = () => {
+        if (!selectedVariation) {
+            toast.error("Please select a color first");
+            return;
+        }
+        if (!selectedSize) {
+            toast.error("Please select a size");
+            return;
+        }
+
+        const variation = {
+            color: selectedVariation.color,
+            size: selectedSize.size,
+            stock: selectedSize.stock,
+        };
+
+        const price = selectedVariation.price || product.price || 0;
+        const finalPrice = price - (price / 100) * (product.discount || 0);
+
+        // check if already in cart
+        const exists = cartItems.some(
+            (item) =>
+                item._id === product._id &&
+                item.variation.color === variation.color &&
+                item.variation.size === variation.size
+        );
+
+        if (exists) {
+            toast.error(`${product.name} is already in cart`);
+            return;
+        }
+
+        const result = dispatch(
+            AddToCart({
+                _id: product._id,
+                name: product.name,
+                price: finalPrice,
+                discount: product.discount,
+                quantity: 1,
+                mainImage: selectedVariation.mainImage
+                    ? `http://localhost:8080/uploads/${selectedVariation.mainImage}`
+                    : "placeholder.jpg",
+                variation,
+            })
+        );
+
+        if (result.payload?.error) {
+            toast.error(`${product.name} is already in cart`);
+        } else {
+            toast.success(`${product.name} added to cart`);
+        }
+    };
+
+    // Add related products to cart
+    const RelatedAddToCart = (product) => {
+        // always pick the first variation safely
+        const firstVariation = product.variations?.[0] || {};
+
+        // choose first size if available
+        const selectedSizeObj = firstVariation.sizes?.[0] || { size: "Default", stock: firstVariation.stock || 0 };
+
+        const variation = {
+            color: firstVariation.color || "Default",
+            size: selectedSizeObj.size,
+            stock: selectedSizeObj.stock,
+        };
+
+        const price = firstVariation.price || product.price || 0;
+        const finalPrice = price - (price / 100) * (product.discount || 0);
+
+        // check if item with same variation already in cart
+        const exists = cartItems.some(
+            (item) =>
+                item._id === product._id &&
+                item.variation.color === variation.color &&
+                item.variation.size === variation.size
+        );
+
+        if (exists) {
+            toast.error(
+                `${product.name} is already in cart`
+            );
+            return;
+        }
+
+        dispatch(
+            AddToCart({
+                _id: product._id,
+                name: product.name,
+                price: finalPrice,
+                discount: product.discount,
+                quantity: 1,
+                mainImage: firstVariation.mainImage
+                    ? `http://localhost:8080/uploads/${firstVariation.mainImage}`
+                    : "placeholder.jpg",
+                variation,
+            })
+        );
+
+        toast.success(
+            `${product.name} added to cart`
+        );
+    };
 
     return (
         <>
@@ -149,14 +261,14 @@ function SingleProduct() {
                                                     onClick={() => {
                                                         setSelectedVariation(variation);
                                                         setSelectedImage(variation.mainImage);
+                                                        setSelectedColor(variation.color);
+                                                        setSelectedSize(null); // reset size when switching color
                                                     }}
-                                                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border hover:cursor-pointer ${selectedVariation?.color === variation.color
-                                                        ? "border-blue-600"
-                                                        : "border-gray-300"
+                                                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border ${selectedColor === variation.color ? "border-green-600" : "border-gray-300"
                                                         }`}
                                                     style={{ backgroundColor: variation.color }}
                                                     title={variation.color}
-                                                ></button>
+                                                />
                                             ))}
                                         </div>
                                     </div>
@@ -168,7 +280,11 @@ function SingleProduct() {
                                             {selectedVariation?.sizes.map((s, i) => (
                                                 <button
                                                     key={i}
-                                                    className="px-2 sm:px-3 py-1 border rounded-md text-xs sm:text-sm text-gray-700 hover:bg-gray-100 hover:cursor-pointer"
+                                                    onClick={() => setSelectedSize(s)}
+                                                    className={`px-3 py-1 border rounded-md text-sm ${selectedSize?.size === s.size
+                                                        ? "bg-green-600 text-white border-green-600"
+                                                        : "text-gray-700 hover:bg-gray-100"
+                                                        }`}
                                                 >
                                                     {s.size} ({s.stock} left)
                                                 </button>
@@ -178,10 +294,17 @@ function SingleProduct() {
 
                                     {/* Buttons */}
                                     <div className="mt-8 flex flex-col sm:flex-row gap-4 font-poppins">
-                                        <button className="w-full sm:flex-1 text-green-700 px-6 py-3 border rounded-lg border-green-700 font-medium hover:bg-green-700 hover:text-white transition">
+                                        <button
+                                            onClick={HandleAddToCart}
+                                            disabled={!selectedColor || !selectedSize}
+                                            className={`w-full sm:flex-1 px-6 py-3 rounded-lg font-medium border transition ${!selectedColor || !selectedSize
+                                                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                                                : "text-green-700 border-green-700 hover:bg-green-700 hover:text-white hover:cursor-pointer"
+                                                }`}
+                                        >
                                             Add to Cart
                                         </button>
-                                        <button className="w-full sm:flex-1 text-black px-6 py-3 border rounded-lg border-stone-800 font-medium hover:bg-stone-700 hover:text-white transition">
+                                        <button className="w-full sm:flex-1 text-black px-6 py-3 border rounded-lg border-stone-800 font-medium hover:bg-stone-700 hover:text-white transition hover:cursor-pointer">
                                             Buy Now
                                         </button>
                                     </div>
@@ -263,7 +386,10 @@ function SingleProduct() {
                                                             </span>
                                                         )}
                                                     </div>
-                                                    <button className="flex items-center justify-center mt-2 py-2 space-x-2 text-green-700 border border-green-700 rounded-md text-sm sm:text-base hover:bg-green-700 hover:text-white transition">
+                                                    <button
+                                                        className="flex items-center justify-center mt-2 py-2 space-x-2 text-green-700 border border-green-700 rounded-md text-sm sm:text-base hover:bg-green-700 hover:text-white transition"
+                                                        onClick={() => RelatedAddToCart(p)}
+                                                    >
                                                         <FaShoppingCart />
                                                         <span>Add To Cart</span>
                                                     </button>
