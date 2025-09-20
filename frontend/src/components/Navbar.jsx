@@ -10,6 +10,7 @@ import { useSelector } from "react-redux";
 const Navbar = ({ onLoginClick }) => {
     const [isOpen, setIsOpen] = useState(false); // Mobile menu
     const CartCount = useSelector((state) => state.cart.items.length);
+    const WishlistCount = useSelector((state) => state.wishlist.items.length);
 
     return (
         <>
@@ -70,10 +71,14 @@ const Navbar = ({ onLoginClick }) => {
                     <div className="flex items-center gap-3 lg:gap-4">
                         {/* Wishlist */}
                         <div className="relative flex items-center hover:cursor-pointer">
-                            <FaHeart className="text-[18px] lg:text-[20px]" />
-                            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
-                                0
-                            </span>
+                            <NavLink to="/wishlist">
+                                <FaHeart className="text-[18px] lg:text-[20px]" />
+                                {WishlistCount > 0 && (
+                                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
+                                        {WishlistCount}
+                                    </span>
+                                )}
+                            </NavLink>
                         </div>
 
                         {/* Cart */}

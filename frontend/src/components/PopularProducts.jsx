@@ -12,6 +12,7 @@ import {
 } from "react-icons/fa";
 import { useDispatch } from "react-redux";
 import { AddToCart } from "../store/cartSlice";
+import { AddToWishlist } from "../store/wishSlice";
 import toast from "react-hot-toast";
 
 const responsive = {
@@ -33,7 +34,7 @@ const PopularProducts = () => {
             .catch((err) => console.error(err));
     }, []);
 
-    // ✅ Add to Cart Handler
+    // Add to Cart Handler
     const handleAddToCart = (product) => {
         const firstVariation = product.variations?.[0] || {};
 
@@ -69,6 +70,48 @@ const PopularProducts = () => {
             toast.error(`${product.name} is already in cart`);
         } else {
             toast.success(`${product.name} added to cart`);
+        }
+    }
+
+    // Add product to wishlist
+    const HandleAddToWishlist = (WishItem) => {
+        // If product has variations array, pick the first one
+        const firstVariation = Array.isArray(WishItem.variations)
+            ? WishItem.variations[0]
+            : {};
+
+        // Pick size if available, otherwise fallback
+        const selectedSizeObj = firstVariation?.sizes?.[0] || {
+            size: "",
+            stock: firstVariation?.stock || 0,
+        };
+
+        const variation = {
+            color: firstVariation?.color || "Default",
+            size: selectedSizeObj.size || "Default",
+            stock: selectedSizeObj.stock || 0,
+        };
+
+        const price = firstVariation?.price || WishItem.price || 0;
+
+        const result = dispatch(
+            AddToWishlist({
+                _id: WishItem._id,
+                name: WishItem.name,
+                price,
+                discount: WishItem.discount,
+                quantity: 1,
+                mainImage: firstVariation?.mainImage
+                    ? `http://localhost:8080/uploads/${firstVariation.mainImage}`
+                    : "placeholder.jpg",
+                variation,
+            })
+        );
+
+        if (result.payload?.error) {
+            toast.error(`${WishItem.name} is already in wishlist`);
+        } else {
+            toast.success(`${WishItem.name} added to wishlist`);
         }
     };
 
@@ -126,7 +169,7 @@ const PopularProducts = () => {
                                             </span>
                                             <div className="flex space-x-2 sm:space-x-3 text-gray-500 text-sm sm:text-base">
                                                 <FaEye className="cursor-pointer hover:text-black transition" />
-                                                <FaHeart className="cursor-pointer hover:text-red-500 transition" />
+                                                <FaHeart className="cursor-pointer hover:text-red-500 transition" onClick={() => HandleAddToWishlist(p)} />
                                             </div>
                                         </div>
 

@@ -13,6 +13,7 @@ import PopularProducts from "./components/PopularProducts";
 import Shop from "./components/Shop";
 import SingleProduct from "./components/SingleProduct";
 import Cart from "./components/Cart";
+import Wishlist from "./components/Wishlist";
 
 const AppContent = () => {
   const [showLogin, setShowLogin] = useState(false);
@@ -114,6 +115,13 @@ const App = () => {
             <>
               <Navbar />
               <Cart />
+              <Footer />
+            </>
+          } />
+          <Route path="/wishlist" element={
+            <>
+              <Navbar />
+              <Wishlist />
               <Footer />
             </>
           } />
