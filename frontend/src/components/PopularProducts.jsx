@@ -45,9 +45,9 @@ const PopularProducts = () => {
         };
 
         const variation = {
-            color: firstVariation.color || "",
-            size: selectedSizeObj.size,
-            stock: selectedSizeObj.stock,
+            color: firstVariation.color || "Default",
+            size: selectedSizeObj.size || "Default",
+            stock: selectedSizeObj.stock || 0,
         };
 
         const price = firstVariation.price || product.price || 0;

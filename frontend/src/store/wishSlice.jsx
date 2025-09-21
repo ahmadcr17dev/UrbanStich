@@ -3,7 +3,17 @@ import { createSlice } from "@reduxjs/toolkit";
 // load wishlist from LocalStorage
 const LoadWishlist = () => {
     const wish = localStorage.getItem("wishlist");
-    return wish ? JSON.parse(wish) : [];
+
+    if (!wish || wish === "undefined") {
+        return [];
+    }
+
+    try {
+        return JSON.parse(wish);
+    } catch (e) {
+        console.error("Invalid wishlist data in localStorage:", e);
+        return [];
+    }
 };
 
 // save to local storage
@@ -30,8 +40,19 @@ const WishSlice = createSlice({
                 action.payload.error = false;
             }
         },
+        RemoveFromWishlist: (state, action) => {
+            const { _id, variation } = action.payload;
+            state.items = state.items.filter(
+                (items) => !(items._id === _id && items.variation.color === variation.color && items.variation.size === variation.size)
+            )
+            SaveWishlist(state.items);
+        },
+        ClearWishlist: (state) => {
+            state.items = [];
+            SaveWishlist();
+        }
     }
 });
 
-export const { AddToWishlist } = WishSlice.actions;
+export const { AddToWishlist, RemoveFromWishlist, ClearWishlist } = WishSlice.actions;
 export default WishSlice.reducer;

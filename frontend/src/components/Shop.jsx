@@ -14,6 +14,7 @@ import { Hourglass } from "react-loader-spinner";
 import { useDispatch, useSelector } from "react-redux";
 import { AddToCart } from "../store/cartSlice";
 import toast from "react-hot-toast";
+import { AddToWishlist } from "../store/wishSlice";
 
 const responsive = {
     superLargeDesktop: { // 2xl
@@ -88,9 +89,9 @@ const Shop = () => {
         };
 
         const variation = {
-            color: firstVariation.color || "",
-            size: selectedSizeObj.size,
-            stock: selectedSizeObj.stock,
+            color: firstVariation.color || "Default",
+            size: selectedSizeObj.size || "Default",
+            stock: selectedSizeObj.stock || 0,
         };
 
         const price = firstVariation.price || product.price || 0;
@@ -115,6 +116,48 @@ const Shop = () => {
             toast.success(`${product.name} added to cart`);
         }
     };
+
+    // Add items to wishlist
+    const HandleAddToWishlist = (WishItem) => {
+        // If product has variations array, pick the first one
+        const firstVariation = Array.isArray(WishItem.variations)
+            ? WishItem.variations[0]
+            : {};
+
+        // Pick size if available, otherwise fallback
+        const selectedSizeObj = firstVariation?.sizes?.[0] || {
+            size: "",
+            stock: firstVariation?.stock || 0,
+        };
+
+        const variation = {
+            color: firstVariation?.color || "Default",
+            size: selectedSizeObj.size || "Default",
+            stock: selectedSizeObj.stock || 0,
+        };
+
+        const price = firstVariation?.price || WishItem.price || 0;
+
+        const result = dispatch(
+            AddToWishlist({
+                _id: WishItem._id,
+                name: WishItem.name,
+                price,
+                discount: WishItem.discount,
+                quantity: 1,
+                mainImage: firstVariation?.mainImage
+                    ? `http://localhost:8080/uploads/${firstVariation.mainImage}`
+                    : "placeholder.jpg",
+                variation,
+            })
+        );
+
+        if (result.payload?.error) {
+            toast.error(`${WishItem.name} is already in wishlist`);
+        } else {
+            toast.success(`${WishItem.name} added to wishlist`);
+        }
+    }
 
     return (
         <>
@@ -317,7 +360,7 @@ const Shop = () => {
                                                 )}
                                                 <div className="absolute top-2 right-2 flex space-x-2 text-gray-500 text-sm sm:text-base">
                                                     <FaEye className="cursor-pointer hover:text-green-600" />
-                                                    <FaHeart className="cursor-pointer hover:text-red-600" />
+                                                    <FaHeart className="cursor-pointer hover:text-red-600" onClick={() => HandleAddToWishlist(p)} />
                                                 </div>
                                             </div>
 

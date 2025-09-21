@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { FaStar, FaShoppingCart, FaHeart, FaEye, FaTruck, FaTag } from "react-icons/fa";
 import { Hourglass } from "react-loader-spinner";
 import { AddToCart } from "../store/cartSlice";
 import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
+import { AddToWishlist } from "../store/wishSlice";
 
 function SingleProduct() {
     const { id } = useParams();
@@ -18,39 +19,60 @@ function SingleProduct() {
     const [loading, setloading] = useState(true);
     const dispatch = useDispatch();
     const cartItems = useSelector((state) => state.cart.items);
+    const wishlistItems = useSelector((state) => state.wishlist.items);
+    const navigate = useNavigate();
 
     useEffect(() => {
         let isMounted = true;
-        axios
-            .get(`http://localhost:8080/api/product/products/${id}`)
-            .then((res) => {
-                if (isMounted) {
-                    setProduct(res.data);
-                    if (res.data.variations.length > 0) {
-                        setSelectedVariation(res.data.variations[0]);
-                        setSelectedImage(res.data.variations[0].mainImage);
+        setloading(true); // start loading
+
+        // simulate 3 second delay
+        const delayTimer = setTimeout(() => {
+            axios
+                .get(`http://localhost:8080/api/product/products/${id}`)
+                .then((res) => {
+                    if (isMounted) {
+                        setProduct(res.data);
+                        if (res.data.variations.length > 0) {
+                            setSelectedVariation(res.data.variations[0]);
+                            setSelectedImage(res.data.variations[0].mainImage);
+                        }
+                        return axios.get(`http://localhost:8080/api/product/products/related`, {
+                            params: { category: res.data.category, excludeId: res.data._id },
+                        });
                     }
-                    return axios.get(`http://localhost:8080/api/product/products/related`, {
-                        params: { category: res.data.category, excludeId: res.data._id },
-                    });
-                }
-            })
-            .then((relatedRes) => {
-                if (isMounted && relatedRes) {
-                    setrelated(relatedRes.data);
-                }
-            })
-            .catch((err) => console.error(err))
-            .finally(() => {
-                if (isMounted) setloading(false);
-            });
+                })
+                .then((relatedRes) => {
+                    if (isMounted && relatedRes) {
+                        setrelated(relatedRes.data);
+                    }
+                })
+                .catch((err) => console.error(err))
+                .finally(() => {
+                    if (isMounted) setloading(false); // stop loading after API + delay
+                });
+        }, 3000);
 
         return () => {
             isMounted = false;
+            clearTimeout(delayTimer);
         };
     }, [id]);
 
-    if (!product) return <p className="text-center mt-10">Loading...</p>;
+    // Loader
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center h-screen">
+                <Hourglass
+                    visible={true}
+                    height="70"
+                    width="70"
+                    ariaLabel="hourglass-loading"
+                    colors={['#277621', '#72bf6a']}
+                />
+            </div>
+        );
+    }
     const price = selectedVariation?.price || 0;
 
     // Add to cart logic
@@ -156,6 +178,94 @@ function SingleProduct() {
         toast.success(
             `${product.name} added to cart`
         );
+    };
+
+    const HandleAddToWishlist = (product) => {
+        // always pick the first variation safely
+        const firstVariation = product.variations?.[0] || {};
+
+        // choose first size if available
+        const selectedSizeObj = firstVariation.sizes?.[0] || { size: "Default", stock: firstVariation.stock || 0 };
+
+        const variation = {
+            color: firstVariation.color || "Default",
+            size: selectedSizeObj.size,
+            stock: selectedSizeObj.stock,
+        };
+
+        const price = firstVariation.price || product.price || 0;
+        const finalPrice = price - (price / 100) * (product.discount || 0);
+
+        // check if item with same variation already in wishlist
+        const exists = wishlistItems.some(
+            (item) =>
+                item._id === product._id &&
+                item.variation.color === variation.color &&
+                item.variation.size === variation.size
+        );
+
+        if (exists) {
+            toast.error(`${product.name} is already in wishlist`);
+            return;
+        }
+
+        dispatch(
+            AddToWishlist({
+                _id: product._id,
+                name: product.name,
+                price: finalPrice,
+                discount: product.discount,
+                quantity: 1,
+                mainImage: product.mainImage
+                    ? product.mainImage.startsWith("http")
+                        ? product.mainImage
+                        : `http://localhost:8080/uploads/${product.mainImage}`
+                    : firstVariation.mainImage
+                        ? `http://localhost:8080/uploads/${firstVariation.mainImage}`
+                        : "placeholder.jpg",
+                variation,
+            })
+        );
+
+        toast.success(`${product.name} added to wishlist`);
+    };
+
+    const HandleBuyNow = async (product) => {
+        const firstVariation = product.variations?.[0] || {};
+        const selectedSizeObj = firstVariation.sizes?.find(s => s.size === selectedSize) || {};
+
+        if (!selectedColor || !selectedSize) {
+            toast.error("Select color and size before proceeding");
+            return;
+        }
+
+        try {
+            const buyProduct = {
+                _id: product._id,
+                name: product.name,
+                price: selectedSizeObj.price || firstVariation.price || product.price || 0,
+                quantity: 1,
+                mainImage: firstVariation.mainImage
+                    ? `http://localhost:8080/uploads/${firstVariation.mainImage}`
+                    : "placeholder.jpg",
+                variation: {
+                    color: selectedColor,
+                    size: selectedSize,
+                    stock: selectedSizeObj.stock ?? firstVariation.stock ?? 0,
+                },
+            };
+
+            const res = await axios.post("http://localhost:8080/api/buynow", buyProduct);
+
+            if (res.status === 200 || res.status === 201) {
+                navigate("/checkout");
+            } else {
+                toast.error("Could not process Buy Now");
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error("Error in Buy Now request");
+        }
     };
 
     return (
@@ -304,7 +414,10 @@ function SingleProduct() {
                                         >
                                             Add to Cart
                                         </button>
-                                        <button className="w-full sm:flex-1 text-black px-6 py-3 border rounded-lg border-stone-800 font-medium hover:bg-stone-700 hover:text-white transition hover:cursor-pointer">
+                                        <button
+                                            className="w-full sm:flex-1 text-black px-6 py-3 border rounded-lg border-stone-800 font-medium hover:bg-stone-700 hover:text-white transition hover:cursor-pointer"
+                                            onClick={() => HandleBuyNow(product)}
+                                        >
                                             Buy Now
                                         </button>
                                     </div>
@@ -348,7 +461,7 @@ function SingleProduct() {
                                                     </span>
                                                     <div className="flex space-x-3 text-gray-500 text-sm">
                                                         <FaEye className="cursor-pointer hover:text-black transition" />
-                                                        <FaHeart className="cursor-pointer hover:text-red-500 transition" />
+                                                        <FaHeart className="cursor-pointer hover:text-red-500 transition" onClick={() => HandleAddToWishlist(p)} />
                                                     </div>
                                                 </div>
 

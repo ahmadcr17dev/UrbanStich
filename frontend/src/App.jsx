@@ -14,6 +14,7 @@ import Shop from "./components/Shop";
 import SingleProduct from "./components/SingleProduct";
 import Cart from "./components/Cart";
 import Wishlist from "./components/Wishlist";
+import Checkout from "./components/Checkout";
 
 const AppContent = () => {
   const [showLogin, setShowLogin] = useState(false);
@@ -125,6 +126,14 @@ const App = () => {
               <Footer />
             </>
           } />
+          <Route path="/checkout" element={
+            <>
+              <Navbar />
+              <Checkout />
+              <Footer />
+            </>
+          }
+          />
         </Routes>
       </Router>
       <Toaster />
