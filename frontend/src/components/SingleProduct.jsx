@@ -231,37 +231,31 @@ function SingleProduct() {
     };
 
     const HandleBuyNow = async (product) => {
-        const firstVariation = product.variations?.[0] || {};
-        const selectedSizeObj = firstVariation.sizes?.find(s => s.size === selectedSize) || {};
-
         if (!selectedColor || !selectedSize) {
             toast.error("Select color and size before proceeding");
             return;
         }
 
         try {
+            const firstVariation = product.variations?.[0] || {};
+            const selectedSizeObj = firstVariation.sizes?.find(s => s.size === selectedSize) || {};
+
             const buyProduct = {
                 _id: product._id,
                 name: product.name,
-                price: selectedSizeObj.price || firstVariation.price || product.price || 0,
+                price: firstVariation.price,   // ✅ make sure price comes
                 quantity: 1,
-                mainImage: firstVariation.mainImage
-                    ? `http://localhost:8080/uploads/${firstVariation.mainImage}`
-                    : "placeholder.jpg",
+                discount: product.discount,
+                mainImage: `http://localhost:8080/uploads/${firstVariation.mainImage}`,
                 variation: {
                     color: selectedColor,
                     size: selectedSize,
-                    stock: selectedSizeObj.stock ?? firstVariation.stock ?? 0,
+                    stock: selectedSizeObj.stock || firstVariation.stock,
                 },
             };
 
-            const res = await axios.post("http://localhost:8080/api/buynow", buyProduct);
-
-            if (res.status === 200 || res.status === 201) {
-                navigate("/checkout");
-            } else {
-                toast.error("Could not process Buy Now");
-            }
+            // ✅ wrap it in an array because Checkout expects products.map()
+            navigate("/checkout", { state: { products: [buyProduct] } });
         } catch (error) {
             console.error(error);
             toast.error("Error in Buy Now request");

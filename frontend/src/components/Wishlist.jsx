@@ -3,14 +3,15 @@ import { FaHeartCrack, FaTrash } from "react-icons/fa6";
 import { Hourglass } from "react-loader-spinner";
 import { useDispatch, useSelector } from "react-redux";
 import { ClearWishlist, RemoveFromWishlist } from "../store/wishSlice";
-import { AddToCart } from "../store/cartSlice";
 import { toast } from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 const Wishlist = () => {
     const [loading, setLoading] = useState(true);
     const [isClearing, setisClearing] = useState(false);
     const wishlistItems = useSelector((state) => state.wishlist.items);
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -35,6 +36,17 @@ const Wishlist = () => {
             toast.success("Wishlist has been cleared");
         }, 3000);
         return () => clearInterval(timer);
+    }
+
+    const HandleBuyNow = (item) => {
+        try {
+            if (!item) {
+                toast.error("Failed to Proceed");
+            }
+            navigate("/checkout", { state: { products: [item] } });
+        } catch (error) {
+            console.log("Error", error.message);
+        }
     }
 
     return (
@@ -106,6 +118,7 @@ const Wishlist = () => {
                                             <td className="py-4 px-4">
                                                 <button
                                                     className="border border-1 border-stone-700 bg-white text-black px-4 py-2 rounded-full text-sm hover:bg-stone-700 hover:text-white hover:cursor-pointer"
+                                                    onClick={() => HandleBuyNow(item)}
                                                 >
                                                     Buy Now
                                                 </button>

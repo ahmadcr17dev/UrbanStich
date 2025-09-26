@@ -5,12 +5,14 @@ import { DecrementProduct, IncrementProduct, RemoveFromCart, ClearCart } from ".
 import { FaTrash } from "react-icons/fa";
 import toast from "react-hot-toast";
 import { FaRegSadTear } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 const Cart = () => {
     const [loading, setLoading] = useState(true);
     const [isClearing, setisClearing] = useState(false);
     const CartItems = useSelector((state) => state.cart.items);
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -44,8 +46,15 @@ const Cart = () => {
     };
 
     const SubTotal = CartItems.reduce(
-        (sum, item) => sum + item.price * item.quantity, 0
+        (sum, item) => sum + (item.price - (item.price / 100) * item.discount) * item.quantity, 0
     )
+
+    const HandleCheckout = () => {
+        if (!CartItems || CartItems.length === 0) {
+            toast.error("Cart is Empty");
+        }
+        navigate("/checkout", { state: { products: CartItems } });
+    }
 
     return (
         <>
@@ -195,9 +204,9 @@ const Cart = () => {
                                                     </dd>
                                                 </dl>
                                                 <dl className="flex justify-between text-gray-600">
-                                                    <dt>Tax (16% GST)</dt>
+                                                    <dt>Tax (5% GST)</dt>
                                                     <dd className="font-medium text-gray-900">
-                                                        Rs {((SubTotal / 100) * 16).toFixed(2)}
+                                                        Rs {((SubTotal / 100) * 5).toFixed(2)}
                                                     </dd>
                                                 </dl>
                                             </div>
@@ -205,11 +214,11 @@ const Cart = () => {
                                             <dl className="flex justify-between border-t pt-3 text-lg font-bold text-gray-900">
                                                 <dt>Total</dt>
                                                 <dd>
-                                                    Rs {(((SubTotal / 100) * 16) + SubTotal).toFixed(2)}
+                                                    Rs {(((SubTotal / 100) * 5) + SubTotal).toFixed(2)}
                                                 </dd>
                                             </dl>
 
-                                            <button className="w-full rounded-lg bg-green-600 px-5 py-3 text-white font-medium hover:bg-green-700 transition hover:cursor-pointer">
+                                            <button className="w-full rounded-lg bg-green-600 px-5 py-3 text-white font-medium hover:bg-green-700 transition hover:cursor-pointer" onClick={HandleCheckout}>
                                                 Proceed to Checkout
                                             </button>
 
